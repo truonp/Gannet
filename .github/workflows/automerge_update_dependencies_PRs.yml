@@ -1,7 +1,7 @@
 name: Automerge update_dependencies pull requests
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.number }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 run-name: ${{ github.event_name }} - ${{ github.actor }} automerge update_dependencies PR
@@ -26,14 +26,14 @@ jobs:
     if: >-
       github.event_name == 'pull_request_target' &&
       !github.event.pull_request.draft &&
-      github.event.pull_request.user.login == 'github-actions[bot]' &&
+      (github.event.pull_request.user.login == 'github-actions[bot]' ||
+      github.event.pull_request.user.login == 'markmikkelsen') &&
       github.event.pull_request.head.repo.full_name == github.repository &&
-      github.event.pull_request.head.ref == 'bot/update-dependencies' &&
-      github.event.pull_request.title == '[BOT] Update dependencies - bids-matlab, dicm2nii, etc.'
+      github.event.pull_request.head.ref == 'bot/update-dependencies'
 
     steps:
       - name: Merge pull request
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
-        run: gh pr merge --merge --delete-branch "$PR_URL"
+        run: gh pr merge --auto --merge --delete-branch "$PR_URL"
